@@ -1,0 +1,42 @@
+{% extends "base.html" %}{% block title %}{{ session.title }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'usher_sessions' %}">&larr; Sessions</a></p>
+<h1>{{ session.title }}</h1>
+<p class="muted">{{ session.meeting_date|date:"j M Y" }} · closes {{ session.closes_at|date:"j M, H:i" }} · {{ signed_total }} recorded so far</p>
+
+<form method="get" class="searchbar">
+  <label class="sr-only" for="q">Search</label>
+  <input id="q" type="search" name="q" value="{{ q }}" placeholder="Search by name or student ID" autocomplete="off">
+  <button class="btn" type="submit">Search</button>
+  {% if q %}<a class="btn" href="{% url 'usher_attendance' session.pk %}">Clear</a>{% endif %}
+</form>
+<p class="muted">{{ total_matching }} {{ total_matching|yesno:"person,people" }}{% if q %} match “{{ q }}”{% endif %}. Selections apply to this page only: save before changing page or search.</p>
+
+<form method="post" id="attendance-form" data-session-title="{{ session.title }}">
+  {% csrf_token %}
+  <input type="hidden" name="session_id" value="{{ session.pk }}">
+  <input type="hidden" name="q" value="{{ q }}">
+  <input type="hidden" name="page" value="{{ page_obj.number }}">
+  <div class="table-wrap"><table class="attendance-table">
+    <thead><tr>
+      <th class="check"><input type="checkbox" id="select-page" aria-label="Select all on this page"></th>
+      <th>Full name</th><th>Student ID</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for p in page_obj %}
+      <tr class="{% if p.signed %}is-signed{% endif %}">
+        <td class="check">{% if p.signed %}<input type="checkbox" checked disabled aria-label="{{ p.full_name }} already signed">{% else %}<input type="checkbox" class="pick" name="user_ids" value="{{ p.pk }}" id="u{{ p.pk }}" aria-label="Select {{ p.full_name }}">{% endif %}</td>
+        <td><label for="u{{ p.pk }}">{{ p.full_name }}</label></td>
+        <td>{{ p.student_id }}</td>
+        <td>{% if p.signed %}<span class="badge badge-strong">Signed</span>{% else %}<span class="badge">Not yet signed</span>{% endif %}</td>
+      </tr>
+    {% empty %}<tr><td colspan="4" class="muted">No matching people.</td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+  <div class="savebar">
+    <span><strong id="selected-count">0</strong> selected</span>
+    <button class="btn btn-primary" id="save-btn" type="submit" disabled>Save attendance</button>
+  </div>
+</form>
+{% include "_pagination.html" %}
+{% endblock %}
+{% block scripts %}{% load static %}<script src="{% static 'js/attendance.js' %}"></script>{% endblock %}

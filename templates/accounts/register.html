@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% block title %}Register{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <h1>Create an account</h1>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% for f in form %}
+      <div class="field"><label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}{% for e in f.errors %}<p class="error">{{ e }}</p>{% endfor %}</div>
+    {% endfor %}
+    <button class="btn btn-primary" type="submit">Register</button>
+  </form>
+  <p class="muted">Already registered? <a href="{% url 'login' %}">Log in</a></p>
+</div>
+{% endblock %}

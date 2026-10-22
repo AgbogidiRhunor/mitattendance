@@ -1,0 +1,42 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}MIT Attendance{% endblock %} · MIT Attendance</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+<header class="topbar">
+  <div class="container topbar-inner">
+    <a class="brand" href="{% url 'dashboard' %}">MIT Attendance</a>
+    {% if user.is_authenticated %}
+    <nav class="nav" aria-label="Main">
+      <a href="{% url 'dashboard' %}">Dashboard</a>
+      <a href="{% url 'history' %}">My history</a>
+      {% if perms.meetings.take_attendance %}<a href="{% url 'usher_sessions' %}">Take attendance</a>{% endif %}
+      {% if user.is_superuser %}
+        <a href="{% url 'manage_dashboard' %}">Admin</a>
+        <a href="{% url 'manage_sessions' %}">Sessions</a>
+        <a href="{% url 'manage_users' %}">Users</a>
+        <a href="{% url 'manage_audit' %}">Audit</a>
+      {% endif %}
+    </nav>
+    <form method="post" action="{% url 'logout' %}" class="logout">
+      {% csrf_token %}
+      <span class="muted who">{{ user.full_name }}</span>
+      <button class="btn btn-small" type="submit">Log out</button>
+    </form>
+    {% endif %}
+  </div>
+</header>
+<main class="container">
+  {% if messages %}<div class="messages" role="status">
+    {% for m in messages %}<div class="message message-{{ m.level_tag }}"><strong>{% if m.level_tag == 'error' %}Error{% elif m.level_tag == 'success' %}Done{% else %}Note{% endif %}.</strong> {{ m }}</div>{% endfor %}
+  </div>{% endif %}
+  {% block content %}{% endblock %}
+</main>
+<script src="{% static 'js/app.js' %}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

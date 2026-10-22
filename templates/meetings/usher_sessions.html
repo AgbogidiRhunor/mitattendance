@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block title %}Take attendance{% endblock %}
+{% block content %}
+<h1>Sessions open for attendance</h1>
+{% for s in sessions %}
+<div class="card row-card">
+  <div><h2>{{ s.title }}</h2>
+    <p class="muted">{{ s.meeting_date|date:"l, j M Y" }} · opened {{ s.opens_at|date:"H:i" }} · closes {{ s.closes_at|date:"j M, H:i" }}</p>
+    <span class="badge badge-strong">Open</span></div>
+  <a class="btn btn-primary" href="{% url 'usher_attendance' s.pk %}">Open attendance list</a>
+</div>
+{% empty %}<div class="card"><p class="muted">No sessions are open for attendance right now.</p></div>{% endfor %}
+{% endblock %}
