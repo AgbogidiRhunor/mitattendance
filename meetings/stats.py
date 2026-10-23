@@ -21,15 +21,15 @@ def pct(part, whole):
 
 
 def user_stats(user):
-    held = MeetingSession.objects.filter(status=FINALIZED).count()
-    attended = AttendanceRecord.objects.filter(user=user, session__status=FINALIZED).count()
+    held = MeetingSession.objects.count()  # every session created, whatever its status
+    attended = AttendanceRecord.objects.filter(user=user).count()
     return {"held": held, "attended": attended, "missed": held - attended, "percent": pct(attended, held)}
 
 
 def history_qs(user):
-    """Finalized sessions with a `present` flag for this user."""
+    """All sessions with a `present` flag for this user."""
     mine = AttendanceRecord.objects.filter(session=OuterRef("pk"), user=user)
-    return MeetingSession.objects.filter(status=FINALIZED).annotate(present=Exists(mine)) \
+    return MeetingSession.objects.annotate(present=Exists(mine)) \
         .order_by("-meeting_date", "-opens_at")
 
 

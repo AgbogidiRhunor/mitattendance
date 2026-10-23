@@ -278,3 +278,10 @@ LOGGING = {
         ),
     },
 }
+
+# Meeting session settings
+AUTO_FINALIZE_AFTER_MINUTES = config(
+    "AUTO_FINALIZE_AFTER_MINUTES",
+    default=0,
+    cast=int,
+)

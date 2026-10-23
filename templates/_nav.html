@@ -1,0 +1,16 @@
+<nav class="nav" aria-label="Sections">
+  <p class="nav-label">Me</p>
+  <a href="{% url 'dashboard' %}" class="{% if n == 'dashboard' %}active{% endif %}"><svg class="icon"><use href="#i-home"/></svg>Dashboard</a>
+  <a href="{% url 'history' %}" class="{% if n == 'history' %}active{% endif %}"><svg class="icon"><use href="#i-clock"/></svg>My history</a>
+  {% if perms.meetings.take_attendance %}
+  <p class="nav-label">Attendance</p>
+  <a href="{% url 'usher_sessions' %}" class="{% if n == 'usher_sessions' or n == 'usher_attendance' %}active{% endif %}"><svg class="icon"><use href="#i-tick"/></svg>Take attendance</a>
+  {% endif %}
+  {% if user.is_superuser %}
+  <p class="nav-label">Administration</p>
+  <a href="{% url 'manage_dashboard' %}" class="{% if n == 'manage_dashboard' %}active{% endif %}"><svg class="icon"><use href="#i-grid"/></svg>Overview</a>
+  <a href="{% url 'manage_sessions' %}" class="{% if n|slice:':14' == 'manage_session' or n == 'manage_correct' %}active{% endif %}"><svg class="icon"><use href="#i-cal"/></svg>Sessions</a>
+  <a href="{% url 'manage_users' %}" class="{% if n|slice:':11' == 'manage_user' %}active{% endif %}"><svg class="icon"><use href="#i-users"/></svg>Users</a>
+  <a href="{% url 'manage_audit' %}" class="{% if n == 'manage_audit' %}active{% endif %}"><svg class="icon"><use href="#i-shield"/></svg>Audit log</a>
+  {% endif %}
+</nav>

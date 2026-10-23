@@ -1,11 +1,12 @@
-<div class="table-wrap"><table>
-  <thead><tr><th>Meeting</th><th>Date</th><th>Status</th><th class="num">Eligible</th><th class="num">Attendees</th><th class="num">Absent</th><th class="num">%</th></tr></thead>
+<div class="panel table-panel"><table class="table stack">
+  <thead><tr><th>Meeting</th><th>Date</th><th>Status</th><th class="num">Eligible</th><th class="num">Present</th><th class="num">Absent</th><th class="num">%</th></tr></thead>
   <tbody>
   {% for r in rows %}
-    <tr><td><a href="{% url 'manage_session_detail' r.session.pk %}">{{ r.session.title }}</a></td>
-        <td>{{ r.session.meeting_date|date:"j M Y" }}</td><td><span class="badge">{{ r.session.get_status_display }}</span></td>
-        <td class="num">{{ r.eligible }}</td><td class="num">{{ r.attendees }}</td><td class="num">{{ r.absent }}</td>
-        <td class="num">{% if r.percent is None %}—{% else %}{{ r.percent }}{% endif %}</td></tr>
-  {% empty %}<tr><td colspan="7" class="muted">No sessions found.</td></tr>{% endfor %}
+    <tr><td data-label="Meeting" class="strong"><a href="{% url 'manage_session_detail' r.session.pk %}">{{ r.session.title }}</a></td>
+        <td data-label="Date">{{ r.session.meeting_date|date:"j M Y" }}</td>
+        <td data-label="Status"><span class="tag {% if r.session.status == 'finalized' %}tag-ok{% endif %}">{{ r.session.get_status_display }}</span></td>
+        <td data-label="Eligible" class="num">{{ r.eligible }}</td><td data-label="Present" class="num">{{ r.attendees }}</td><td data-label="Absent" class="num">{{ r.absent }}</td>
+        <td data-label="Attendance %" class="num">{% if r.percent is None %}—{% else %}{{ r.percent }}{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="7" class="empty">No sessions found.</td></tr>{% endfor %}
   </tbody>
 </table></div>

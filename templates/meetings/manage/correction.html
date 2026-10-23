@@ -1,18 +1,17 @@
 {% extends "base.html" %}{% block title %}Correct attendance{% endblock %}
 {% block content %}
-<div class="card narrow">
-  <h1>Correct attendance</h1>
-  <p><strong>{{ person.full_name }}</strong> ({{ person.student_id }})<br><span class="muted">{{ session.title }} · {{ session.meeting_date|date:"j M Y" }}</span></p>
+<a class="back" href="{% url 'manage_session_detail' session.pk %}"><svg class="icon sm"><use href="#i-back"/></svg>{{ session.title }}</a>
+<div class="page-head"><div><h1>Correct attendance</h1><p class="sub">{{ person.full_name }} ({{ person.student_id }}) · {{ session.title }}, {{ session.meeting_date|date:"j M Y" }}</p></div></div>
+<div class="panel form form-wide">
   {% if not can_correct %}
-    <p class="message message-error">Corrections are only allowed after a session has closed.</p>
+    <div class="message message-error"><span>Corrections are only allowed after a session has closed.</span></div>
   {% else %}
-    <p>Current state: <strong>{% if record %}Present{% else %}Absent{% endif %}</strong>{% if record %} (recorded by {{ record.recorded_by.full_name }}, {{ record.recorded_at|date:"j M, H:i" }}){% endif %}.<br>
-    This correction will mark them <strong>{% if record %}absent{% else %}present{% endif %}</strong>. It is permanent and written to the audit log.</p>
+    <p>Current state: <strong>{% if record %}Present{% else %}Absent{% endif %}</strong>{% if record %} (recorded by {{ record.recorded_by.full_name }}, {{ record.recorded_at|date:"j M, H:i" }}){% endif %}.</p>
+    <p class="note">This correction will mark them <strong>{% if record %}absent{% else %}present{% endif %}</strong>. It is permanent and written to the audit log.</p>
     <form method="post" novalidate>
       {% csrf_token %}{{ form.action }}
       <div class="field"><label for="{{ form.reason.id_for_label }}">{{ form.reason.label }}</label>{{ form.reason }}{% for e in form.reason.errors %}<p class="error">{{ e }}</p>{% endfor %}</div>
-      <button class="btn btn-primary" type="submit">Save correction</button>
-      <a class="btn" href="{% url 'manage_session_detail' session.pk %}">Cancel</a>
+      <div class="form-actions"><button class="btn btn-primary" type="submit">Save correction</button><a class="btn" href="{% url 'manage_session_detail' session.pk %}">Cancel</a></div>
     </form>
   {% endif %}
 </div>

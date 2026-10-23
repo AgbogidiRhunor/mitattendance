@@ -1,13 +1,13 @@
 {% extends "base.html" %}{% block title %}Audit log{% endblock %}
 {% block content %}
-<h1>Audit log</h1>
-<div class="table-wrap"><table>
+<div class="page-head"><div><h1>Audit log</h1><p class="sub">Every attendance correction, newest first. Entries cannot be edited or deleted.</p></div></div>
+<div class="panel table-panel"><table class="table stack">
   <thead><tr><th>When</th><th>Session</th><th>Person</th><th>Change</th><th>Before</th><th>After</th><th>By</th><th>Reason</th></tr></thead>
   <tbody>{% for e in page_obj %}
-    <tr><td>{{ e.created_at|date:"j M Y, H:i" }}</td><td>{{ e.session.title }}</td><td>{{ e.user.full_name }}<br><span class="muted">{{ e.user.student_id }}</span></td>
-      <td>{{ e.get_action_display }}</td><td>{% if e.original_values.present %}Present{% else %}Absent{% endif %}</td><td>{% if e.corrected_values.present %}Present{% else %}Absent{% endif %}</td>
-      <td>{{ e.performed_by.full_name }}</td><td>{{ e.reason }}</td></tr>
-  {% empty %}<tr><td colspan="8" class="muted">No corrections yet.</td></tr>{% endfor %}</tbody>
+    <tr><td data-label="When">{{ e.created_at|date:"j M Y, H:i" }}</td><td data-label="Session">{{ e.session.title }}</td><td data-label="Person" class="strong">{{ e.user.full_name }}<span class="sub block">{{ e.user.student_id }}</span></td>
+      <td data-label="Change">{{ e.get_action_display }}</td><td data-label="Before">{% if e.original_values.present %}Present{% else %}Absent{% endif %}</td><td data-label="After">{% if e.corrected_values.present %}Present{% else %}Absent{% endif %}</td>
+      <td data-label="By">{{ e.performed_by.full_name }}</td><td data-label="Reason">{{ e.reason }}</td></tr>
+  {% empty %}<tr><td colspan="8" class="empty">No corrections yet.</td></tr>{% endfor %}</tbody>
 </table></div>
 {% include "_pagination.html" %}
 {% endblock %}

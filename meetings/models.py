@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -71,6 +73,10 @@ class MeetingSession(models.Model):
         closed = pending.filter(closes_at__lte=now).update(status=cls.Status.CLOSED, closed_at=F("closes_at"))
         opened = cls.objects.filter(status=cls.Status.SCHEDULED, opens_at__lte=now, closes_at__gt=now) \
             .update(status=cls.Status.OPEN)
+        delay = settings.AUTO_FINALIZE_AFTER_MINUTES
+        if delay >= 0:  # only sessions that are already CLOSED can be auto-finalized
+            cls.objects.filter(status=cls.Status.CLOSED, closed_at__lte=now - timedelta(minutes=delay)) \
+                .update(status=cls.Status.FINALIZED, finalized_at=now)
         return closed, opened
 
     @classmethod

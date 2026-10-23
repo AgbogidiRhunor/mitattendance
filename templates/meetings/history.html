@@ -1,6 +1,6 @@
 {% extends "base.html" %}{% block title %}My history{% endblock %}
 {% block content %}
-<h1>My attendance history</h1>
+<div class="page-head"><div><h1>My history</h1><p class="sub">Finalized meetings and whether you were present.</p></div></div>
 {% include "_history_table.html" with sessions=page_obj %}
 {% include "_pagination.html" %}
 {% endblock %}

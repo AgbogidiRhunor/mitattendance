@@ -1,2 +1,2 @@
 {% extends "base.html" %}{% block title %}Not allowed{% endblock %}
-{% block content %}<div class="card narrow"><h1>Access denied</h1><p class="muted">You do not have permission to view this page.</p><a class="btn" href="{% url 'dashboard' %}">Back to dashboard</a></div>{% endblock %}
+{% block content %}<div class="panel center-card"><h1>Access denied</h1><p class="sub">You do not have permission to view this page.</p><a class="btn btn-primary" href="{% url 'dashboard' %}">Back to dashboard</a></div>{% endblock %}

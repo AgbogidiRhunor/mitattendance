@@ -1,14 +1,15 @@
 {% extends "base.html" %}{% block title %}{{ person.full_name }}{% endblock %}
 {% block content %}
-<p><a href="{% url 'manage_users' %}">&larr; Users</a></p>
-<h1>{{ person.full_name }}</h1><p class="muted">{{ person.student_id }} · joined {{ person.date_joined|date:"j M Y" }}</p>
-<section class="cards">
-  <div class="card stat"><span class="stat-label">Meetings held</span><span class="stat-value">{{ stats.held }}</span></div>
-  <div class="card stat"><span class="stat-label">Attended</span><span class="stat-value">{{ stats.attended }}</span></div>
-  <div class="card stat"><span class="stat-label">Missed</span><span class="stat-value">{{ stats.missed }}</span></div>
-  <div class="card stat"><span class="stat-label">Attendance</span><span class="stat-value">{% if stats.percent is None %}—{% else %}{{ stats.percent }}%{% endif %}</span></div>
+<a class="back" href="{% url 'manage_users' %}"><svg class="icon sm"><use href="#i-back"/></svg>Users</a>
+<div class="page-head"><div><h1>{{ person.full_name }}</h1><p class="sub">{{ person.student_id }} · joined {{ person.date_joined|date:"j M Y" }}</p></div></div>
+<section class="stats">
+  <div class="stat"><span class="stat-label">Meetings held</span><span class="stat-value">{{ stats.held }}</span></div>
+  <div class="stat"><span class="stat-label">Attended</span><span class="stat-value">{{ stats.attended }}</span></div>
+  <div class="stat"><span class="stat-label">Missed</span><span class="stat-value">{{ stats.missed }}</span></div>
+  <div class="stat"><span class="stat-label">Attendance</span><span class="stat-value">{% if stats.percent is None %}—{% else %}{{ stats.percent }}%{% endif %}</span></div>
 </section>
-{% if extra_sessions %}<p class="muted">{{ extra_sessions }} further record(s) belong to sessions not yet finalized.</p>{% endif %}
+{% if extra_sessions %}<p class="note">{{ extra_sessions }} further record(s) belong to sessions not yet finalized.</p>{% endif %}
+<div class="section-head"><h2>Attendance history</h2></div>
 {% include "_history_table.html" with sessions=page_obj %}
 {% include "_pagination.html" %}
 {% endblock %}

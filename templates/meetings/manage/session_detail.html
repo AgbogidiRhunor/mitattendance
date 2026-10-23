@@ -1,7 +1,8 @@
 {% extends "base.html" %}{% block title %}{{ session.title }}{% endblock %}
 {% block content %}
-<p><a href="{% url 'manage_sessions' %}">&larr; Sessions</a></p>
-<div class="head-row"><h1>{{ session.title }} <span class="badge">{{ state|capfirst }}</span></h1>
+<a class="back" href="{% url 'manage_sessions' %}"><svg class="icon sm"><use href="#i-back"/></svg>Sessions</a>
+<div class="page-head"><div><h1>{{ session.title }} <span class="tag {% if state == 'finalized' %}tag-ok{% endif %}">{{ state|capfirst }}</span></h1>
+  <p class="sub">{{ session.meeting_date|date:"l, j M Y" }} · opens {{ session.opens_at|date:"j M, H:i" }} · closes {{ session.closes_at|date:"j M, H:i" }}{% if session.finalized_at %} · finalized {{ session.finalized_at|date:"j M Y, H:i" }}{% endif %}</p></div>
   <div class="actions">
     {% if state == 'scheduled' or state == 'open' %}
       <a class="btn" href="{% url 'manage_session_edit' session.pk %}">Edit</a>
@@ -12,45 +13,44 @@
     <a class="btn" href="{% url 'manage_session_csv' session.pk %}">Export CSV</a>
   </div>
 </div>
-<p class="muted">{{ session.meeting_date|date:"l, j M Y" }} · opens {{ session.opens_at|date:"j M, H:i" }} · closes {{ session.closes_at|date:"j M, H:i" }}{% if session.finalized_at %} · finalized {{ session.finalized_at|date:"j M Y, H:i" }}{% endif %}</p>
-{% if state != 'finalized' %}<p class="muted">Figures are provisional until the session is finalized.</p>{% endif %}
-<section class="cards">
-  <div class="card stat"><span class="stat-label">Eligible users</span><span class="stat-value">{{ row.eligible }}</span></div>
-  <div class="card stat"><span class="stat-label">Attendees</span><span class="stat-value">{{ row.attendees }}</span></div>
-  <div class="card stat"><span class="stat-label">Absentees</span><span class="stat-value">{{ row.absent }}</span></div>
-  <div class="card stat"><span class="stat-label">Attendance</span><span class="stat-value">{% if row.percent is None %}—{% else %}{{ row.percent }}%{% endif %}</span></div>
+<section class="stats">
+  <div class="stat"><span class="stat-label">Eligible</span><span class="stat-value">{{ row.eligible }}</span></div>
+  <div class="stat"><span class="stat-label">Present</span><span class="stat-value">{{ row.attendees }}</span></div>
+  <div class="stat"><span class="stat-label">Absent</span><span class="stat-value">{{ row.absent }}</span></div>
+  <div class="stat"><span class="stat-label">Attendance</span><span class="stat-value">{% if row.percent is None %}—{% else %}{{ row.percent }}%{% endif %}</span></div>
 </section>
 
-<div class="tabs">
-  <a class="tab {% if show == 'present' %}active{% endif %}" href="?show=present">Present</a>
-  <a class="tab {% if show == 'absent' %}active{% endif %}" href="?show=absent">Absent</a>
+<div class="segmented" role="tablist">
+  <a class="{% if show == 'present' %}active{% endif %}" href="?show=present">Present</a>
+  <a class="{% if show == 'absent' %}active{% endif %}" href="?show=absent">Absent</a>
 </div>
-<form method="get" class="searchbar">
+<form method="get" class="search">
   <input type="hidden" name="show" value="{{ show }}">
-  <input type="search" name="q" value="{{ q }}" placeholder="Search by name or student ID" aria-label="Search">
-  <button class="btn" type="submit">Search</button>
+  <svg class="icon search-icon"><use href="#i-search"/></svg>
+  <input type="search" name="q" value="{{ q }}" placeholder="Search name or student ID" aria-label="Search">
+  <button class="btn btn-primary" type="submit">Search</button>
   {% if q %}<a class="btn" href="?show={{ show }}">Clear</a>{% endif %}
 </form>
-<div class="table-wrap"><table>
+<div class="panel table-panel"><table class="table stack">
   {% if show == 'present' %}
   <thead><tr><th>Full name</th><th>Student ID</th><th>Recorded by</th><th>Recorded at</th><th></th></tr></thead>
   <tbody>{% for r in page_obj %}
-    <tr><td>{{ r.user.full_name }}</td><td>{{ r.user.student_id }}</td><td>{{ r.recorded_by.full_name }}</td><td>{{ r.recorded_at|date:"j M, H:i" }}</td>
-      <td>{% if can_correct %}<a href="{% url 'manage_correct' session.pk r.user_id %}">Correct</a>{% endif %}</td></tr>
-  {% empty %}<tr><td colspan="5" class="muted">No attendees recorded.</td></tr>{% endfor %}</tbody>
+    <tr><td data-label="Name" class="strong">{{ r.user.full_name }}</td><td data-label="Student ID">{{ r.user.student_id }}</td><td data-label="Recorded by">{{ r.recorded_by.full_name }}</td><td data-label="Recorded at">{{ r.recorded_at|date:"j M, H:i" }}</td>
+      <td data-label="" class="row-action">{% if can_correct %}<a class="btn btn-small" href="{% url 'manage_correct' session.pk r.user_id %}">Correct</a>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="5" class="empty">No attendees recorded.</td></tr>{% endfor %}</tbody>
   {% else %}
   <thead><tr><th>Full name</th><th>Student ID</th><th></th></tr></thead>
   <tbody>{% for u in page_obj %}
-    <tr><td>{{ u.full_name }}</td><td>{{ u.student_id }}</td>
-      <td>{% if can_correct %}<a href="{% url 'manage_correct' session.pk u.pk %}">Correct</a>{% endif %}</td></tr>
-  {% empty %}<tr><td colspan="3" class="muted">No absentees.</td></tr>{% endfor %}</tbody>
+    <tr><td data-label="Name" class="strong">{{ u.full_name }}</td><td data-label="Student ID">{{ u.student_id }}</td>
+      <td data-label="" class="row-action">{% if can_correct %}<a class="btn btn-small" href="{% url 'manage_correct' session.pk u.pk %}">Correct</a>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="3" class="empty">No absentees.</td></tr>{% endfor %}</tbody>
   {% endif %}
 </table></div>
 {% include "_pagination.html" %}
 
-{% if recent_audit %}<h2>Recent corrections</h2>
-<div class="table-wrap"><table><thead><tr><th>When</th><th>Person</th><th>Change</th><th>By</th><th>Reason</th></tr></thead><tbody>
-{% for e in recent_audit %}<tr><td>{{ e.created_at|date:"j M, H:i" }}</td><td>{{ e.user.full_name }}</td><td>{{ e.get_action_display }}</td><td>{{ e.performed_by.full_name }}</td><td>{{ e.reason }}</td></tr>{% endfor %}
-</tbody></table></div>
-<p><a href="{% url 'manage_audit' %}?session={{ session.pk }}">Full audit history for this session</a></p>{% endif %}
+{% if recent_audit %}
+<div class="section-head"><h2>Recent corrections</h2><a href="{% url 'manage_audit' %}?session={{ session.pk }}">Full history</a></div>
+<div class="panel table-panel"><table class="table stack"><thead><tr><th>When</th><th>Person</th><th>Change</th><th>By</th><th>Reason</th></tr></thead><tbody>
+{% for e in recent_audit %}<tr><td data-label="When">{{ e.created_at|date:"j M, H:i" }}</td><td data-label="Person" class="strong">{{ e.user.full_name }}</td><td data-label="Change">{{ e.get_action_display }}</td><td data-label="By">{{ e.performed_by.full_name }}</td><td data-label="Reason">{{ e.reason }}</td></tr>{% endfor %}
+</tbody></table></div>{% endif %}
 {% endblock %}

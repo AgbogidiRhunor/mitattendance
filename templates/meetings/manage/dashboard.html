@@ -1,23 +1,21 @@
-{% extends "base.html" %}{% block title %}Admin dashboard{% endblock %}
+{% extends "base.html" %}{% block title %}Overview{% endblock %}
 {% block content %}
-<h1>Admin dashboard</h1>
-<form method="get" class="filters">
-  {{ form.date_from.label_tag }} {{ form.date_from }} {{ form.date_to.label_tag }} {{ form.date_to }}
-  <button class="btn" type="submit">Apply</button>
-  <a class="btn" href="{% url 'manage_dashboard' %}">Reset</a>
-  <a class="btn" href="{% url 'manage_report_csv' %}{% if qs %}?{{ qs }}{% endif %}">Export CSV</a>
+<div class="page-head"><div><h1>Overview</h1><p class="sub">Figures cover finalized meetings in the selected period.</p></div>
+  <div class="actions"><a class="btn btn-primary" href="{% url 'manage_session_create' %}"><svg class="icon sm"><use href="#i-plus"/></svg>New session</a></div></div>
+<form method="get" class="panel filters">
+  <div class="field">{{ form.date_from.label_tag }}{{ form.date_from }}</div>
+  <div class="field">{{ form.date_to.label_tag }}{{ form.date_to }}</div>
+  <div class="filter-actions"><button class="btn btn-primary" type="submit">Apply</button><a class="btn" href="{% url 'manage_dashboard' %}">Reset</a><a class="btn" href="{% url 'manage_report_csv' %}{% if qs %}?{{ qs }}{% endif %}">Export CSV</a></div>
 </form>
 {% if form.non_field_errors %}<p class="error">{{ form.non_field_errors.0 }}</p>{% endif %}
-<p class="muted">Period figures cover finalized meetings dated within the selected range (all, if none selected).</p>
-<section class="cards">
-  <div class="card stat"><span class="stat-label">Registered users</span><span class="stat-value">{{ total_users }}</span></div>
-  <div class="card stat"><span class="stat-label">Finalized meetings</span><span class="stat-value">{{ totals.sessions }}</span></div>
-  <div class="card stat"><span class="stat-label">Attendance records</span><span class="stat-value">{{ totals.attendance }}</span></div>
-  <div class="card stat"><span class="stat-label">Absences</span><span class="stat-value">{{ totals.absences }}</span></div>
-  <div class="card stat"><span class="stat-label">Average attendance</span><span class="stat-value">{% if totals.percent is None %}—{% else %}{{ totals.percent }}%{% endif %}</span></div>
-  <div class="card stat"><span class="stat-label">Open sessions</span><span class="stat-value">{{ open_sessions }}</span></div>
+<section class="stats stats-6">
+  <div class="stat"><span class="stat-label">Registered users</span><span class="stat-value">{{ total_users }}</span></div>
+  <div class="stat"><span class="stat-label">Finalized meetings</span><span class="stat-value">{{ totals.sessions }}</span></div>
+  <div class="stat"><span class="stat-label">Attendance records</span><span class="stat-value">{{ totals.attendance }}</span></div>
+  <div class="stat"><span class="stat-label">Absences</span><span class="stat-value">{{ totals.absences }}</span></div>
+  <div class="stat"><span class="stat-label">Average attendance</span><span class="stat-value">{% if totals.percent is None %}—{% else %}{{ totals.percent }}%{% endif %}</span></div>
+  <div class="stat"><span class="stat-label">Open sessions</span><span class="stat-value">{{ open_sessions }}</span></div>
 </section>
-<h2>Latest finalized sessions</h2>
+<div class="section-head"><h2>Latest finalized sessions</h2><a href="{% url 'manage_sessions' %}">All sessions</a></div>
 {% include "meetings/manage/_session_table.html" %}
-<p><a class="btn btn-primary" href="{% url 'manage_session_create' %}">Create session</a> <a class="btn" href="{% url 'manage_sessions' %}">All sessions</a></p>
 {% endblock %}

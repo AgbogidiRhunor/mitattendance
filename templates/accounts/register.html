@@ -1,14 +1,14 @@
 {% extends "base.html" %}{% block title %}Register{% endblock %}
 {% block content %}
-<div class="card narrow">
-  <h1>Create an account</h1>
-  <form method="post" novalidate>
+<div class="auth">
+  <div class="auth-brand"><span class="logo">M</span><h1>Create your account</h1><p class="sub">Just your name, student ID and a password.</p></div>
+  <form method="post" class="panel form" novalidate>
     {% csrf_token %}
     {% for f in form %}
       <div class="field"><label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}{% for e in f.errors %}<p class="error">{{ e }}</p>{% endfor %}</div>
     {% endfor %}
-    <button class="btn btn-primary" type="submit">Register</button>
+    <button class="btn btn-primary btn-block" type="submit">Register</button>
   </form>
-  <p class="muted">Already registered? <a href="{% url 'login' %}">Log in</a></p>
+  <p class="sub center">Already registered? <a href="{% url 'login' %}">Log in</a></p>
 </div>
 {% endblock %}

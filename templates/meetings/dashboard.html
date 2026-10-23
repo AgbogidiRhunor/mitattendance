@@ -1,14 +1,12 @@
 {% extends "base.html" %}{% block title %}Dashboard{% endblock %}
 {% block content %}
-<h1>Hello, {{ user.get_short_name }}</h1>
-<p class="muted">Statistics count finalized meetings only.</p>
-<section class="cards">
-  <div class="card stat"><span class="stat-label">Meetings held</span><span class="stat-value">{{ stats.held }}</span></div>
-  <div class="card stat"><span class="stat-label">Meetings attended</span><span class="stat-value">{{ stats.attended }}</span></div>
-  <div class="card stat"><span class="stat-label">Meetings missed</span><span class="stat-value">{{ stats.missed }}</span></div>
-  <div class="card stat"><span class="stat-label">Attendance</span><span class="stat-value">{% if stats.percent is None %}—{% else %}{{ stats.percent }}%{% endif %}</span></div>
+<div class="page-head"><div><h1>Hello, {{ user.get_short_name }}</h1><p class="sub">Your attendance across finalized meetings.</p></div></div>
+<section class="stats">
+  <div class="stat"><span class="stat-label">Meetings held</span><span class="stat-value">{{ stats.held }}</span></div>
+  <div class="stat"><span class="stat-label">Attended</span><span class="stat-value">{{ stats.attended }}</span></div>
+  <div class="stat"><span class="stat-label">Missed</span><span class="stat-value">{{ stats.missed }}</span></div>
+  <div class="stat"><span class="stat-label">Attendance</span><span class="stat-value">{% if stats.percent is None %}—{% else %}{{ stats.percent }}%{% endif %}</span></div>
 </section>
-<h2>Recent meetings</h2>
+<div class="section-head"><h2>Recent meetings</h2><a href="{% url 'history' %}">View all</a></div>
 {% include "_history_table.html" with sessions=recent %}
-<p><a href="{% url 'history' %}">View full history</a></p>
 {% endblock %}

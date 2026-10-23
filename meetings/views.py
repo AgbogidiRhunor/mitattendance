@@ -25,6 +25,7 @@ def error_403(request, exception=None):
 
 @login_required
 def dashboard(request):
+    MeetingSession.sync_statuses()
     return render(request, "meetings/dashboard.html", {
         "stats": user_stats(request.user),
         "recent": history_qs(request.user)[:5],
@@ -33,6 +34,7 @@ def dashboard(request):
 
 @login_required
 def history(request):
+    MeetingSession.sync_statuses()
     page_obj, qs = paginate(request, history_qs(request.user))
     return render(request, "meetings/history.html", {"page_obj": page_obj, "qs": qs})
 

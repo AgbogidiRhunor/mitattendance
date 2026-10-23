@@ -1,12 +1,13 @@
 {% extends "base.html" %}{% block title %}Take attendance{% endblock %}
 {% block content %}
-<h1>Sessions open for attendance</h1>
+<div class="page-head"><div><h1>Take attendance</h1><p class="sub">Choose a session that is open right now.</p></div></div>
+<div class="stack-list">
 {% for s in sessions %}
-<div class="card row-card">
-  <div><h2>{{ s.title }}</h2>
-    <p class="muted">{{ s.meeting_date|date:"l, j M Y" }} · opened {{ s.opens_at|date:"H:i" }} · closes {{ s.closes_at|date:"j M, H:i" }}</p>
-    <span class="badge badge-strong">Open</span></div>
-  <a class="btn btn-primary" href="{% url 'usher_attendance' s.pk %}">Open attendance list</a>
+  <a class="panel session-card" href="{% url 'usher_attendance' s.pk %}">
+    <div class="grow"><h2>{{ s.title }}</h2>
+      <p class="sub">{{ s.meeting_date|date:"l, j M Y" }} · closes {{ s.closes_at|date:"j M, H:i" }}</p></div>
+    <span class="btn btn-primary">Open list</span>
+  </a>
+{% empty %}<div class="panel empty-panel"><p><strong>No sessions are open.</strong></p><p class="sub">Attendance can only be taken between a session’s opening and closing time.</p></div>{% endfor %}
 </div>
-{% empty %}<div class="card"><p class="muted">No sessions are open for attendance right now.</p></div>{% endfor %}
 {% endblock %}
