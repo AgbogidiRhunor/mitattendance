@@ -18,8 +18,8 @@ DEBUG = config(
 )
 
 ALLOWED_HOSTS = config(
-    "ALLOWED_HOSTS",
-    default="localhost,127.0.0.1",
+    "DJANGO_ALLOWED_HOSTS",
+    default="localhost,127.0.0.1,mitattendance.onrender.com",
     cast=Csv(),
 )
 
