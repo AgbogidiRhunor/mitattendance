@@ -8,7 +8,7 @@ from .models import User, normalize_full_name, normalize_student_id, student_id_
 
 class RegistrationForm(forms.Form):
     full_name = forms.CharField(max_length=150, label="Full name")
-    student_id = forms.CharField(max_length=40, label="Student / matriculation ID")
+    student_id = forms.CharField(max_length=40, label="Matriculation Number")
     password1 = forms.CharField(label="Password", strip=False, widget=forms.PasswordInput)
     password2 = forms.CharField(label="Confirm password", strip=False, widget=forms.PasswordInput)
 
@@ -47,10 +47,10 @@ class RegistrationForm(forms.Form):
 
 
 class LoginForm(AuthenticationForm):
-    username = forms.CharField(label="Student / matriculation ID", widget=forms.TextInput(attrs={"autofocus": True}))
+    username = forms.CharField(label="Matriculation Number", widget=forms.TextInput(attrs={"autofocus": True}))
 
     error_messages = {
-        "invalid_login": "Incorrect student ID or password.",
+        "invalid_login": "Incorrect matriculation number or password.",
         "inactive": "This account is inactive.",
     }
 
