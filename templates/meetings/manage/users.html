@@ -16,7 +16,6 @@
       <td data-label="" class="row-action"><form method="post" action="{% url 'manage_user_role' u.pk %}" class="inline">
         {% csrf_token %}<input type="hidden" name="qs" value="{{ request.GET.urlencode }}">
         {% if u.has_usher_role %}<button class="btn btn-small" name="action" value="revoke_usher">Remove usher</button>{% else %}<button class="btn btn-small" name="action" value="grant_usher">Make usher</button>{% endif %}
-        {% if u.is_superuser %}<button class="btn btn-small" name="action" value="revoke_admin" data-confirm="Remove administrator access for {{ u.full_name }}?">Remove admin</button>{% else %}<button class="btn btn-small" name="action" value="grant_admin" data-confirm="Give {{ u.full_name }} full administrator access?">Make admin</button>{% endif %}
       </form></td></tr>
   {% empty %}<tr><td colspan="4" class="empty">No users found.</td></tr>{% endfor %}</tbody>
 </table></div>

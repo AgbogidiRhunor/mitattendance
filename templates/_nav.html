@@ -1,5 +1,4 @@
 <nav class="nav" aria-label="Sections">
-  <p class="nav-label">Me</p>
   <a href="{% url 'dashboard' %}" class="{% if n == 'dashboard' %}active{% endif %}"><svg class="icon"><use href="#i-home"/></svg>Dashboard</a>
   <a href="{% url 'history' %}" class="{% if n == 'history' %}active{% endif %}"><svg class="icon"><use href="#i-clock"/></svg>My history</a>
   {% if perms.meetings.take_attendance %}
