@@ -1,3 +1,4 @@
+
 import sys
 from pathlib import Path
 
@@ -6,6 +7,8 @@ from decouple import config, Csv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+# Security and environment
 SECRET_KEY = config(
     "SECRET_KEY",
     default="django-insecure-change-me-in-production",
@@ -23,24 +26,14 @@ ALLOWED_HOSTS = config(
     cast=Csv(),
 )
 
-VERCEL_URL = config("VERCEL_URL", default="")
-
-if VERCEL_URL and VERCEL_URL not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append(VERCEL_URL)
-
 CSRF_TRUSTED_ORIGINS = config(
     "CSRF_TRUSTED_ORIGINS",
-    default="",
+    default="https://mitattendance.onrender.com",
     cast=Csv(),
 )
 
-if VERCEL_URL:
-    vercel_origin = f"https://{VERCEL_URL}"
 
-    if vercel_origin not in CSRF_TRUSTED_ORIGINS:
-        CSRF_TRUSTED_ORIGINS.append(vercel_origin)
-
-
+# Applications
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -51,8 +44,9 @@ INSTALLED_APPS = [
     "accounts",
     "meetings",
 ]
- 
 
+
+# Middleware
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -69,6 +63,8 @@ ROOT_URLCONF = "config.urls"
 
 WSGI_APPLICATION = "config.wsgi.application"
 
+
+# Templates
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -85,30 +81,29 @@ TEMPLATES = [
 ]
 
 
+# Database: Render PostgreSQL in production, SQLite locally if
+# no PostgreSQL configuration has been supplied.
 DATABASE_URL = config(
     "DATABASE_URL",
     default="",
 )
 
 if DATABASE_URL:
-    # Production PostgreSQL or a configured PostgreSQL connection URL.
     DATABASES = {
         "default": dj_database_url.parse(
             DATABASE_URL,
             conn_max_age=60,
             ssl_require=config(
                 "DB_SSL_REQUIRE",
-                default=True,
+                default=not DEBUG,
                 cast=bool,
             ),
         )
     }
-
 else:
     local_db_name = config("DB_NAME", default="")
 
     if local_db_name:
-        # Local PostgreSQL.
         DATABASES = {
             "default": {
                 "ENGINE": "django.db.backends.postgresql",
@@ -123,9 +118,7 @@ else:
                 },
             }
         }
-
     else:
-        # Convenient local development fallback.
         DATABASES = {
             "default": {
                 "ENGINE": "django.db.backends.sqlite3",
@@ -134,8 +127,11 @@ else:
         }
 
 
+# Custom user model
 AUTH_USER_MODEL = "accounts.User"
 
+
+# Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": (
@@ -166,17 +162,21 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Use a faster password hasher during automated tests only.
+
+# Faster password hashing during automated tests only
 if "test" in sys.argv[1:]:
     PASSWORD_HASHERS = [
         "django.contrib.auth.hashers.MD5PasswordHasher",
     ]
 
+
+# Authentication redirects
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "dashboard"
 LOGOUT_REDIRECT_URL = "login"
 
 
+# Internationalization
 LANGUAGE_CODE = "en-us"
 
 TIME_ZONE = config(
@@ -188,6 +188,7 @@ USE_I18N = True
 USE_TZ = True
 
 
+# Static files and WhiteNoise
 STATIC_URL = "static/"
 
 STATICFILES_DIRS = [
@@ -211,13 +212,21 @@ STORAGES = {
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
+# Attendance configuration
 ATTENDANCE_PAGE_SIZE = config(
     "ATTENDANCE_PAGE_SIZE",
     default=25,
     cast=int,
 )
 
+AUTO_FINALIZE_AFTER_MINUTES = config(
+    "AUTO_FINALIZE_AFTER_MINUTES",
+    default=0,
+    cast=int,
+)
 
+
+# Session and browser security
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SAMESITE = "Lax"
@@ -228,6 +237,8 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 SECURE_REFERRER_POLICY = "same-origin"
 
+
+# HTTPS settings for production
 if not DEBUG:
     SECURE_SSL_REDIRECT = config(
         "SECURE_SSL_REDIRECT",
@@ -253,6 +264,7 @@ if not DEBUG:
         SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 
 
+# Logging
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -278,10 +290,3 @@ LOGGING = {
         ),
     },
 }
-
-# Meeting session settings
-AUTO_FINALIZE_AFTER_MINUTES = config(
-    "AUTO_FINALIZE_AFTER_MINUTES",
-    default=0,
-    cast=int,
-)
