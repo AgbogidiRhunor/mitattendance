@@ -1,4 +1,4 @@
-"""Application admin pages (superusers only)."""
+"""Application admin pages (superusers and sub admins)."""
 import csv
 
 from django.contrib import messages
@@ -11,12 +11,13 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from accounts import roles
-from accounts.models import USHER_GROUP, User
+from accounts.models import SUB_ADMIN_GROUP, USHER_GROUP, User
 
 from .decorators import admin_required
 from .forms import CorrectionForm, DateRangeForm, SessionForm
 from .models import AttendanceAuditLog, AttendanceRecord, MeetingSession
-from .services import AttendanceError, close_session_now, correct_attendance, finalize_session
+from .services import (AttendanceError, close_session_now, correct_attendance, delete_attendance,
+                       delete_session, finalize_session)
 from .stats import annotate_counts, history_qs, period_totals, pct, session_rows, user_stats
 from .utils import paginate, search_users
 
@@ -131,6 +132,30 @@ def session_close(request, pk):
 
 
 @admin_required
+@require_POST
+def session_delete(request, pk):
+    try:
+        label, records = delete_session(pk, request.user)
+    except AttendanceError as exc:
+        messages.error(request, str(exc))
+        return redirect("manage_sessions")
+    messages.success(request, f"Deleted {label} and {records} attendance record(s).")
+    return redirect("manage_sessions")
+
+
+@admin_required
+@require_POST
+def attendance_delete(request, pk, user_id):
+    try:
+        delete_attendance(session_id=pk, user_id=user_id, actor=request.user)
+    except AttendanceError as exc:
+        messages.error(request, str(exc))
+    else:
+        messages.success(request, "Attendance record deleted and logged in the audit log.")
+    return redirect("manage_session_detail", pk=pk)
+
+
+@admin_required
 def session_detail(request, pk):
     MeetingSession.sync_statuses()
     session = get_object_or_404(MeetingSession, pk=pk)
@@ -199,6 +224,8 @@ def users(request):
         qs = qs.filter(groups__name=USHER_GROUP)
     elif role == "admin":
         qs = qs.filter(is_superuser=True)
+    elif role == "subadmin":
+        qs = qs.filter(groups__name=SUB_ADMIN_GROUP)
     page_obj, query = paginate(request, qs.order_by("full_name", "student_id"))
     return render(request, "meetings/manage/users.html", {"page_obj": page_obj, "qs": query, "q": q, "role": role})
 

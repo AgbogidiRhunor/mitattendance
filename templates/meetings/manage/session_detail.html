@@ -11,6 +11,7 @@
       <form method="post" action="{% url 'manage_session_finalize' session.pk %}" data-confirm="Finalize this session? It will count in official statistics.">{% csrf_token %}<button class="btn btn-primary" type="submit">Finalize</button></form>
     {% endif %}
     <a class="btn" href="{% url 'manage_session_csv' session.pk %}">Export CSV</a>
+    {% if user.is_superuser %}<form method="post" action="{% url 'manage_session_delete' session.pk %}" data-confirm="Delete this session and its {{ row.attendees }} attendance record(s)? This cannot be undone.">{% csrf_token %}<button class="btn" type="submit">Delete session</button></form>{% endif %}
   </div>
 </div>
 <section class="stats">
@@ -36,7 +37,8 @@
   <thead><tr><th>Full name</th><th>Student ID</th><th>Recorded by</th><th>Recorded at</th><th></th></tr></thead>
   <tbody>{% for r in page_obj %}
     <tr><td data-label="Name" class="strong">{{ r.user.full_name }}</td><td data-label="Student ID">{{ r.user.student_id }}</td><td data-label="Recorded by">{{ r.recorded_by.full_name }}</td><td data-label="Recorded at">{{ r.recorded_at|date:"j M, H:i" }}</td>
-      <td data-label="" class="row-action">{% if can_correct %}<a class="btn btn-small" href="{% url 'manage_correct' session.pk r.user_id %}">Correct</a>{% endif %}</td></tr>
+      <td data-label="" class="row-action"><div class="actions">{% if can_correct %}<a class="btn btn-small" href="{% url 'manage_correct' session.pk r.user_id %}">Correct</a>{% endif %}
+        {% if user.is_superuser %}<form method="post" action="{% url 'manage_attendance_delete' session.pk r.user_id %}" data-confirm="Delete the attendance record for {{ r.user.full_name }}? This cannot be undone.">{% csrf_token %}<button class="btn btn-small" type="submit">Delete</button></form>{% endif %}</div></td></tr>
   {% empty %}<tr><td colspan="5" class="empty">No attendees recorded.</td></tr>{% endfor %}</tbody>
   {% else %}
   <thead><tr><th>Full name</th><th>Student ID</th><th></th></tr></thead>

@@ -43,7 +43,10 @@ class MeetingSession(models.Model):
         constraints = [
             models.CheckConstraint(condition=Q(closes_at__gt=F("opens_at")), name="session_closes_after_opens"),
         ]
-        permissions = [("take_attendance", "Can record attendance for open sessions")]
+        permissions = [
+            ("take_attendance", "Can record attendance for open sessions"),
+            ("manage_app", "Can use the application's admin pages"),
+        ]
 
     def __str__(self):
         return f"{self.title} ({self.meeting_date})"

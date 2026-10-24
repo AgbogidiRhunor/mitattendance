@@ -4,7 +4,7 @@
 <form method="get" class="search">
   <svg class="icon search-icon"><use href="#i-search"/></svg>
   <input type="search" name="q" value="{{ q }}" placeholder="Search name or student ID" aria-label="Search">
-  <select name="role" aria-label="Role"><option value="">All roles</option><option value="usher"{% if role == 'usher' %} selected{% endif %}>Ushers</option><option value="admin"{% if role == 'admin' %} selected{% endif %}>Admins</option></select>
+  <select name="role" aria-label="Role"><option value="">All roles</option><option value="usher"{% if role == 'usher' %} selected{% endif %}>Ushers</option><option value="admin"{% if role == 'admin' %} selected{% endif %}>Admins</option><option value="subadmin"{% if role == 'subadmin' %} selected{% endif %}>Sub admins</option></select>
   <button class="btn btn-primary" type="submit">Search</button>
   {% if q or role %}<a class="btn" href="{% url 'manage_users' %}">Clear</a>{% endif %}
 </form>
@@ -12,10 +12,11 @@
   <thead><tr><th>Full name</th><th>Student ID</th><th>Roles</th><th>Actions</th></tr></thead>
   <tbody>{% for u in page_obj %}
     <tr><td data-label="Name" class="strong"><a href="{% url 'manage_user_detail' u.pk %}">{{ u.full_name }}</a>{% if not u.is_active %} <span class="tag">Inactive</span>{% endif %}</td><td data-label="Student ID">{{ u.student_id }}</td>
-      <td data-label="Roles">{% if u.is_superuser %}<span class="tag tag-ok">Admin</span> {% endif %}{% if u.has_usher_role %}<span class="tag tag-ok">Usher</span>{% endif %}{% if not u.is_superuser and not u.has_usher_role %}<span class="sub">User</span>{% endif %}</td>
+      <td data-label="Roles">{% if u.is_superuser %}<span class="tag tag-ok">Admin</span> {% endif %}{% if u.has_sub_admin_role %}<span class="tag tag-ok">Sub admin</span> {% endif %}{% if u.has_usher_role %}<span class="tag tag-ok">Usher</span>{% endif %}{% if not u.is_superuser and not u.has_sub_admin_role and not u.has_usher_role %}<span class="sub">User</span>{% endif %}</td>
       <td data-label="" class="row-action"><form method="post" action="{% url 'manage_user_role' u.pk %}" class="inline">
         {% csrf_token %}<input type="hidden" name="qs" value="{{ request.GET.urlencode }}">
         {% if u.has_usher_role %}<button class="btn btn-small" name="action" value="revoke_usher">Remove usher</button>{% else %}<button class="btn btn-small" name="action" value="grant_usher">Make usher</button>{% endif %}
+        {% if user.is_superuser %}{% if u.has_sub_admin_role %}<button class="btn btn-small" name="action" value="revoke_sub_admin" data-confirm="Remove sub admin access for {{ u.full_name }}?">Remove sub admin</button>{% else %}<button class="btn btn-small" name="action" value="grant_sub_admin">Make sub admin</button>{% endif %}{% endif %}
       </form></td></tr>
   {% empty %}<tr><td colspan="4" class="empty">No users found.</td></tr>{% endfor %}</tbody>
 </table></div>

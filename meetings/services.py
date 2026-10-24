@@ -1,12 +1,16 @@
 """All state-changing attendance logic. Views stay thin; every rule is enforced
 here, inside transactions that lock the session row."""
+import logging
+
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.utils import timezone
 
-from accounts.models import ATTENDANCE_PERMISSION, User
+from accounts.models import ATTENDANCE_PERMISSION, MANAGE_PERMISSION, User
 
 from .models import AttendanceAuditLog, AttendanceRecord, MeetingSession
+
+logger = logging.getLogger(__name__)
 
 MAX_BATCH = 500
 Status = MeetingSession.Status
@@ -79,7 +83,7 @@ def _snapshot(record):
 
 def correct_attendance(*, session_id, user_id, action, reason, actor, now=None):
     """Admin-only, audited correction. Allowed once a session is closed or finalized."""
-    if not (actor.is_authenticated and actor.is_active and actor.is_superuser):
+    if not (actor.is_authenticated and actor.is_active and actor.has_perm(MANAGE_PERMISSION)):
         raise PermissionDenied
     reason = (reason or "").strip()
     if len(reason) < 5:
@@ -116,7 +120,7 @@ def correct_attendance(*, session_id, user_id, action, reason, actor, now=None):
 
 
 def finalize_session(session_id, actor, now=None):
-    if not (actor.is_authenticated and actor.is_active and actor.is_superuser):
+    if not (actor.is_authenticated and actor.is_active and actor.has_perm(MANAGE_PERMISSION)):
         raise PermissionDenied
     with transaction.atomic():
         session = _lock_session(session_id)
@@ -134,7 +138,7 @@ def finalize_session(session_id, actor, now=None):
 
 
 def close_session_now(session_id, actor, now=None):
-    if not (actor.is_authenticated and actor.is_active and actor.is_superuser):
+    if not (actor.is_authenticated and actor.is_active and actor.has_perm(MANAGE_PERMISSION)):
         raise PermissionDenied
     with transaction.atomic():
         session = _lock_session(session_id)
@@ -145,3 +149,36 @@ def close_session_now(session_id, actor, now=None):
         session.closed_at = now
         session.save(update_fields=["status", "closed_at"])
     return session
+
+
+def delete_attendance(*, session_id, user_id, actor):
+    """Main admin only. Hard-deletes one attendance record in any session state, with an audit entry."""
+    if not (actor.is_authenticated and actor.is_active and actor.is_superuser):
+        raise PermissionDenied
+    with transaction.atomic():
+        session = _lock_session(session_id)
+        record = AttendanceRecord.objects.filter(session=session, user_id=user_id).select_related("user").first()
+        if not record:
+            raise AttendanceError("This person is not marked present.")
+        entry = AttendanceAuditLog.objects.create(
+            attendance_record_id=record.pk, session=session, user=record.user,
+            action=AttendanceAuditLog.Action.REMOVE, original_values=_snapshot(record),
+            corrected_values=_snapshot(None), reason="Deleted from the admin dashboard", performed_by=actor,
+        )
+        AttendanceRecord.objects.filter(pk=record.pk).delete()  # queryset delete: audited path only
+    return entry
+
+
+def delete_session(session_id, actor):
+    """Main admin only. Deletes a session with its attendance records and audit entries (PROTECT blocks a plain delete)."""
+    if not (actor.is_authenticated and actor.is_active and actor.is_superuser):
+        raise PermissionDenied
+    with transaction.atomic():
+        session = _lock_session(session_id)
+        label = str(session)
+        audit_deleted = AttendanceAuditLog.objects.filter(session=session).delete()[0]
+        records_deleted = AttendanceRecord.objects.filter(session=session).delete()[0]
+        MeetingSession.objects.filter(pk=session.pk).delete()
+    logger.warning("Session %r (id=%s) deleted by %s (id=%s): %s attendance record(s), %s audit entr(ies) removed",
+                   label, session_id, actor.student_id, actor.pk, records_deleted, audit_deleted)
+    return label, records_deleted

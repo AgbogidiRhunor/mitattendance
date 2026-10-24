@@ -6,7 +6,9 @@ from django.db import models
 from django.utils import timezone
 
 USHER_GROUP = "Usher"
+SUB_ADMIN_GROUP = "Sub admin"
 ATTENDANCE_PERMISSION = "meetings.take_attendance"
+MANAGE_PERMISSION = "meetings.manage_app"
 
 
 def normalize_student_id(value):
@@ -54,7 +56,8 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     """Account identified by student ID. Roles live in Django groups/permissions:
-    admin == is_superuser, usher == membership of the 'Usher' group."""
+    admin == is_superuser (also Django Admin), sub admin == 'Sub admin' group (no Django Admin),
+    usher == 'Usher' group."""
 
     student_id = models.CharField(max_length=30, unique=True, validators=[student_id_validator])
     full_name = models.CharField(max_length=150)
@@ -86,7 +89,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     @property
     def is_app_admin(self):
-        return self.is_active and self.is_superuser
+        """May use the application's admin pages: Django admin (superuser) or a sub admin."""
+        return self.is_active and self.has_perm(MANAGE_PERMISSION)
+
+    @property
+    def has_sub_admin_role(self):
+        return any(g.name == SUB_ADMIN_GROUP for g in self.groups.all())
 
     @property
     def has_usher_role(self):
